@@ -160,9 +160,12 @@ cython_debug/
 #.idea/
 
 # Data Files
-.csv
-.jpg
-.png
+*.csv
+*.jpg
+*.png
 
 # Run Files
-.bat
+*.bat
+
+# Jupyter Notebooks
+*.ipynb

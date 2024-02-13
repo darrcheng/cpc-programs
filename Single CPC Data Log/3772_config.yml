@@ -1,0 +1,35 @@
+---
+pulse_count : False
+cpc : "3772"
+labjack : "ANY"
+labjack_io :
+  "flow_read_input": "AIN0"
+  "voltage_monitor_input": "AIN1"
+  "press_input": "AIN2"
+  "temp_input": "AIN3"
+  "rh_input": "AIN4"
+  "voltage_set_pos": "TDAC2"
+  "voltage_set_neg": "TDAC3"
+  "flow_set_output": "DAC1"
+  "counter": "DIO18"
+  "width": "DIO0"
+  "fill_valve" : "DIO3"
+# cpc_config:
+#   "default_flow" : True
+#   "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+data_config:
+  "header": ["Count","Timer","Elapsed Time","Set Diameter [nm]","Calculated Diameter [nm]","Set Voltage [V]","Actual Voltage [V]","Flow Rate [LPM]","Temperature [C]","RH [%]","Pressure [kPa]","Concentration [#/cc]","Concentration No Deadtime[#/cc]","Counts [#]","Pulse Width [s]","Pulse Width Error [%]","Blower Control Runtime [s]","Voltage Update Runtime [s]","Voltage Monitor Runtime [s]","CPC Counting Runtime [s]","Datalogging Runtime[s]"]
+  "serial_commands": ["RALL", "RSF", "RIF","RSN","RCOUNT1","RCOUNT2","R5"]
+  "cpc_header" :  ["time", "concentration","instrument errors","saturator temp","condensor temp","optics temp", "cabinet temp","ambient pressure","orifice pressure","nozzle pressure","laser current","liquid level","aersol flow", "inlet flow","serial number","corrected counts","uncorrected counts","ready status"] 
+  "serial_port": "COM5"
+  "serial_baud": 115200
+  "serial_bytesize": 8
+  "serial_parity": "N"
+  "serial_timeout": 0.05
+  "start_commands" : []
+  "default_flow" : True
+  "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+ion_config:
+  "toggle_seconds" : 60
+  "precip_volt" : 500
+  "supply_scaling" : 500

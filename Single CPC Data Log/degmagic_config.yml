@@ -1,0 +1,35 @@
+---
+pulse_count : False
+cpc : "degmagic"
+labjack : "ANY"
+labjack_io :
+  "flow_read_input": "AIN0"
+  "voltage_monitor_input": "AIN1"
+  "press_input": "AIN2"
+  "temp_input": "AIN3"
+  "rh_input": "AIN4"
+  "voltage_set_pos": "TDAC2"
+  "voltage_set_neg": "TDAC3"
+  "flow_set_output": "DAC1"
+  "counter": "DIO18"
+  "width": "DIO0"
+  "fill_valve" : "DIO3"
+# cpc_config:
+#   "default_flow" : True
+#   "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+data_config:
+  "header": ["Count","Timer","Elapsed Time","Set Diameter [nm]","Calculated Diameter [nm]","Set Voltage [V]","Actual Voltage [V]","Flow Rate [LPM]","Temperature [C]","RH [%]","Pressure [kPa]","Concentration [#/cc]","Concentration No Deadtime[#/cc]","Counts [#]","Pulse Width [s]","Pulse Width Error [%]","Blower Control Runtime [s]","Voltage Update Runtime [s]","Voltage Monitor Runtime [s]","CPC Counting Runtime [s]","Datalogging Runtime[s]"]
+  "serial_commands": []
+  "cpc_header" :  ["datetime","instrument_datetime","concentration","dew_point","temp_inlet","rh_inlet","temp_deg0","temp_deg1","temp_conditioner","temp_initiator","temp_moderator","temp_optics","temp_cabinet","supply_voltage","pressure_differential","pressure_absolute","flow_rate","time_interval","time_corrected_live","time_dead","raw_counts_low","raw_counts_high","flags","errors","serial_number"] 
+  "serial_port": "COM4"
+  "serial_baud": 115200
+  "serial_bytesize": 8
+  "serial_parity": "N"
+  "serial_timeout": 0.05
+  "start_commands" : ['log,1']
+  "default_flow" : True
+  "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+ion_config:
+  "toggle_seconds" : 60
+  "precip_volt" : 500
+  "supply_scaling" : 500
