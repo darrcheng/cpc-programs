@@ -47,12 +47,8 @@ class CPCSerial:
 
         # Loop until stop event is set
         while not self.stop_event.is_set():
-            # Read serial data
-            # Parse serial data
-            # Add data to queue
             try:
                 # Store responses in a list
-                # responses = {"datetime": [datetime.now()]}
                 responses = []
 
                 if self.config["serial_commands"]:

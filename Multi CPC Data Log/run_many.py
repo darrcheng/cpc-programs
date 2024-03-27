@@ -15,6 +15,7 @@ from cpcfnc import CPCSerial
 
 class App:
     def __init__(self, root, config_file):
+
         # Load config file
         self.config_file = config_file
         self.program_path = os.path.dirname(os.path.realpath(__file__))
@@ -28,11 +29,10 @@ class App:
         self.num_cpcs = self.config["num_cpcs"]
 
         # Threading related initializations
-        # self.serial_queue = queue.Queue()
         self.serial_queues = [queue.Queue() for _ in range(self.num_cpcs)]
         self.stop_threads = threading.Event()
 
-        # Initialize CPCs
+        # Initialize CPC classes
         self.cpcs = []
         for i in range(self.num_cpcs):
             cpc = CPCSerial.CPCSerial(
@@ -42,29 +42,18 @@ class App:
                 None,
             )
             self.cpcs.append(cpc)
-        # # Initalize classes
-        # self.cpc = CPCSerial.CPCSerial(
-        #     self.config["cpc1"],
-        #     self.serial_queue,
-        #     self.stop_threads,
-        #     None,
-        # )
 
         # Setup tkinter GUI
         self.root = root
         self.root.protocol("WM_DELETE_WINDOW", self.close)
 
-        # For logging
+        # Setup CSV file
         self.current_date = time.strftime("%Y%m%d")
         self.cpc_headers = []
         for i in range(self.num_cpcs):
             cpc_header = self.config[f"cpc{i+1}"]["cpc_header"]
             self.cpc_headers.extend(cpc_header)
-
         self.start_time, self.csv_filepath = self.create_files(self.cpc_headers)
-
-        # # Start CPC serial data collection
-        # self.cpc.start()
 
         # Start threads for all CPCs
         for cpc in self.cpcs:
@@ -80,6 +69,7 @@ class App:
                 self.cpc_headers
             )
 
+        # Get data from all CPCs
         all_cpc_data = {}
         for i in range(self.num_cpcs):
             try:
@@ -97,29 +87,9 @@ class App:
         all_values = []
         for cpc_data in all_cpc_data.values():
             all_values.extend(cpc_data.values())
-        # all_values = [value for key, value in self.data.items()]
         with open(self.csv_filepath, mode="a", newline="") as data_file:
             data_writer = csv.writer(data_file, delimiter=",")
             data_writer.writerow(all_values)
-
-        # if self.config["pulse_count"]:
-        #     try:
-        #         self.count_data = self.count_queue.get_nowait()
-        #     except:
-        #         print("No LJ Data")
-        # print(self.count_data)
-
-        # # Update GUI with new serial data
-        # self.update_gui()
-
-        # # Save data for plotting
-        # self.update_plot()
-
-        # # Log data to CSV
-        # self.log_data()
-
-        # except queue.Empty:
-        #     pass
 
         # Check the queue again after 1s
         self.root.after(1000, self.check_queue)
@@ -129,6 +99,7 @@ class App:
         self.root.destroy()
 
     def create_files(self, header):
+        # Create subfolder for current date
         start_time = datetime.now()
         current_date = start_time.strftime("%Y-%m-%d")
         subfolder_path = os.path.join(os.getcwd(), current_date)
