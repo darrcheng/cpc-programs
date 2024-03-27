@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import queue
 import threading
@@ -28,6 +29,7 @@ class App:
 
         # Setup tkinter GUI
         self.root = root
+        self.root.protocol("WM_DELETE_WINDOW", self.close)
 
         # For logging
         self.current_date = time.strftime("%Y%m%d")
@@ -41,34 +43,44 @@ class App:
         )
         self.cpc.start()
 
-        # Check the queue every 100ms
-        root.after(100, self.check_queue)
+        # Check the queue every 1s
+        root.after(1000, self.check_queue)
 
     def check_queue(self):
         try:
             self.data = self.serial_queue.get_nowait()
             print(self.data)
-            # if self.config["pulse_count"]:
-            #     try:
-            #         self.count_data = self.count_queue.get_nowait()
-            #     except:
-            #         print("No LJ Data")
-            # print(self.count_data)
-
-            # # Update GUI with new serial data
-            # self.update_gui()
-
-            # # Save data for plotting
-            # self.update_plot()
-
-            # # Log data to CSV
-            # self.log_data()
 
         except queue.Empty:
-            pass
+            self.data = dict.fromkeys(self.config["cpc1"]["cpc_header"], np.nan)
+            print(self.data)
+
+        # if self.config["pulse_count"]:
+        #     try:
+        #         self.count_data = self.count_queue.get_nowait()
+        #     except:
+        #         print("No LJ Data")
+        # print(self.count_data)
+
+        # # Update GUI with new serial data
+        # self.update_gui()
+
+        # # Save data for plotting
+        # self.update_plot()
+
+        # # Log data to CSV
+        # self.log_data()
+
+        # except queue.Empty:
+        #     pass
+
         finally:
-            # Check the queue again after 100ms
-            self.root.after(100, self.check_queue)
+            # Check the queue again after 1s
+            self.root.after(1000, self.check_queue)
+
+    def close(self):
+        self.stop_threads.set()
+        self.root.destroy()
 
 
 if __name__ == "__main__":

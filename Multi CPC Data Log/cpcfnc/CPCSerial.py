@@ -43,6 +43,8 @@ class CPCSerial:
         # Send startup commands
         self.serial_startup_commands()
 
+        curr_time = time.monotonic()
+
         # Loop until stop event is set
         while not self.stop_event.is_set():
             # Read serial data
@@ -50,7 +52,8 @@ class CPCSerial:
             # Add data to queue
             try:
                 # Store responses in a list
-                responses = {"datetime": [datetime.now()]}
+                # responses = {"datetime": [datetime.now()]}
+                responses = []
 
                 if self.config["serial_commands"]:
                     for command in self.config["serial_commands"]:
@@ -62,24 +65,29 @@ class CPCSerial:
                         response = response.split(",")
 
                         # Append response to the list
-                        responses[command] = response
+                        responses.extend(response)
                 else:
                     # Read response from serial port
                     response = self.ser.readline().decode().rstrip()
                     response = response.split(",")
 
                     # Append response to the list
-                    responses["default"] = response
+                    responses = response
+
+                # Create dictionary with responses
+                responses = [self.process_name, datetime.now()] + responses
+                serial_output = dict(zip(self.config["cpc_header"], responses))
 
                 # Modify concentration
                 if not self.config["default_flow"]:
                     calc_conc = (
-                        float(responses["RB"][0]) / self.config["cpc_flowrate"]
+                        float(serial_output["1 second counts"])
+                        / self.config["cpc_flowrate"]
                     )
-                    responses["RD"] = ["{:.2f}".format(calc_conc)]
+                    serial_output["concentration"] = "{:.2f}".format(calc_conc)
 
                 # Share CPC data with other threads
-                self.data_queue.put(responses)
+                self.data_queue.put(serial_output)
 
                 # Schedule the next update
                 curr_time = sched_update(self.process_name, curr_time)
