@@ -1,0 +1,26 @@
+---
+"num_cpcs": 2
+cpc1:
+  "cpc_name": "TSI 3025_1"
+  "serial_port": "COM4"
+  "serial_baud": 9600
+  "serial_bytesize": 7
+  "serial_parity": "E"
+  "serial_timeout": 0.05
+  "start_commands" : ['TS440','TO460']
+  "default_flow" : False
+  "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+  "serial_commands": ['RD','R1','R2','R3','R4','R5','R6','R7','RE','RB','R0']
+  "cpc_header" : ["cpc name","datetime","concentration","condensor temp","saturator temp","optics temp","flow","ready environment","reference detector voltage","detector voltage","pump control value","1 second counts","liquid level"]
+cpc2:
+  "cpc_name": "TSI 3025_2"
+  "serial_port": "COM5"
+  "serial_baud": 9600
+  "serial_bytesize": 7
+  "serial_parity": "E"
+  "serial_timeout": 0.05
+  "start_commands" : ['TS440','TO460']
+  "default_flow" : False
+  "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+  "serial_commands": ['RD','R1','R2','R3','R4','R5','R6','R7','RE','RB','R0']
+  "cpc_header" : ["cpc name","datetime","concentration","condensor temp","saturator temp","optics temp","flow","ready environment","reference detector voltage","detector voltage","pump control value","1 second counts","liquid level"]
