@@ -1,0 +1,13 @@
+---
+cpc1:
+  "cpc_name": "TSI 3025"
+  "serial_port": "COM13"
+  "serial_baud": 9600
+  "serial_bytesize": 7
+  "serial_parity": "E"
+  "serial_timeout": 0.05
+  "start_commands" : ['TS440','TO460']
+  "default_flow" : False
+  "cpc_flowrate" : 0.7833 # 300/60 cubic centimeters per second
+  "serial_commands": ['RD','R1','R2','R3','R4','R5','R6','R7','RE','RB','R0']
+  
