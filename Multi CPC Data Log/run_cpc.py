@@ -25,10 +25,30 @@ class App:
         ) as f:
             self.config = yaml.safe_load(f)
 
+        self.num_cpcs = self.config["num_cpcs"]
+
         # Threading related initializations
-        self.serial_queue = queue.Queue()
-        self.count_queue = queue.Queue()
+        # self.serial_queue = queue.Queue()
+        self.serial_queues = [queue.Queue() for _ in range(self.num_cpcs)]
         self.stop_threads = threading.Event()
+
+        # Initialize CPCs
+        self.cpcs = []
+        for i in range(self.num_cpcs):
+            cpc = CPCSerial.CPCSerial(
+                self.config[f"cpc{i+1}"],
+                self.serial_queues[i],
+                self.stop_threads,
+                None,
+            )
+            self.cpcs.append(cpc)
+        # # Initalize classes
+        # self.cpc = CPCSerial.CPCSerial(
+        #     self.config["cpc1"],
+        #     self.serial_queue,
+        #     self.stop_threads,
+        #     None,
+        # )
 
         # Setup tkinter GUI
         self.root = root
@@ -36,18 +56,19 @@ class App:
 
         # For logging
         self.current_date = time.strftime("%Y%m%d")
+        self.cpc_headers = []
+        for i in range(self.num_cpcs):
+            cpc_header = self.config[f"cpc{i+1}"]["cpc_header"]
+            self.cpc_headers.extend(cpc_header)
 
-        # Start CPC serial data collection
-        self.cpc = CPCSerial.CPCSerial(
-            self.config["cpc1"],
-            self.serial_queue,
-            self.stop_threads,
-            None,
-        )
-        self.start_time, self.csv_filepath = self.create_files(
-            self.config["cpc1"]["cpc_header"]
-        )
-        self.cpc.start()
+        self.start_time, self.csv_filepath = self.create_files(self.cpc_headers)
+
+        # # Start CPC serial data collection
+        # self.cpc.start()
+
+        # Start threads for all CPCs
+        for cpc in self.cpcs:
+            cpc.start()
 
         # Check the queue every 1s
         root.after(1000, self.check_queue)
@@ -56,19 +77,27 @@ class App:
         # Create new file on new day
         if datetime.now().day != self.start_time.day:
             self.start_time, self.csv_filepath = self.create_files(
-                self.config["cpc1"]["cpc_header"]
+                self.cpc_headers
             )
-        try:
-            self.data = self.serial_queue.get_nowait()
-            print(self.data)
 
-        except queue.Empty:
-            self.data = dict.fromkeys(self.config["cpc1"]["cpc_header"], np.nan)
-            print(self.data)
+        all_cpc_data = {}
+        for i in range(self.num_cpcs):
+            try:
+                self.data = self.serial_queues[i].get_nowait()
+                print(self.data)
 
-        all_values = [value for key, value in self.data.items()]
+            except queue.Empty:
+                self.data = dict.fromkeys(
+                    self.config[f"cpc{i+1}"]["cpc_header"], np.nan
+                )
+                print(self.data)
+            all_cpc_data[f"cpc{i+1}"] = self.data
 
         # Write all raw data to CSV file
+        all_values = []
+        for cpc_data in all_cpc_data.values():
+            all_values.extend(cpc_data.values())
+        # all_values = [value for key, value in self.data.items()]
         with open(self.csv_filepath, mode="a", newline="") as data_file:
             data_writer = csv.writer(data_file, delimiter=",")
             data_writer.writerow(all_values)

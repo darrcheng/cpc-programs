@@ -1,4 +1,5 @@
 ---
+"num_cpcs": 1
 cpc1:
   "cpc_name": "TSI 3025"
   "serial_port": "COM4"
