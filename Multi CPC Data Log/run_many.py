@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime
-import numpy as np
 import os
 import queue
 import threading
@@ -8,6 +7,7 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
+import numpy as np
 import yaml
 
 from cpcfnc import CPCSerial
