@@ -8,7 +8,7 @@ import serial
 
 
 class CPCSerial:
-    def __init__(self, config, data_queue, stop_event, stop_barrier):
+    def __init__(self, config, data_queue, stop_event, stop_barrier, test=False):
         self.config = config
         self.data_queue = data_queue
         self.stop_event = stop_event
@@ -16,6 +16,9 @@ class CPCSerial:
 
         self.process_name = self.config["cpc_name"]
         self.thread = threading.Thread(target=self.record_serial_data)
+        
+        # GUI testing code here
+        self.test = test
 
     def start(self):
         self.thread.start()
@@ -37,11 +40,12 @@ class CPCSerial:
                 self.ser.readline().decode().rstrip()
 
     def record_serial_data(self):
-        # Setup CPC serial connection
-        self.serial_startup()
+        if self.test == False:
+            # Setup CPC serial connection
+            self.serial_startup()
 
-        # Send startup commands
-        self.serial_startup_commands()
+            # Send startup commands
+            self.serial_startup_commands()
 
         curr_time = time.monotonic()
 
@@ -53,6 +57,11 @@ class CPCSerial:
 
                 if self.config["serial_commands"]:
                     for command in self.config["serial_commands"]:
+                        # GUI testing code here
+                        if self.test:
+                            responses.append(0)
+                            continue
+
                         # Send command to serial port
                         self.ser.write((command + "\r").encode())
 
@@ -63,6 +72,12 @@ class CPCSerial:
                         # Append response to the list
                         responses.extend(response)
                 else:
+
+                    # GUI testing code here
+                    if self.test:
+                        responses.append(1)
+                        continue
+
                     # Read response from serial port
                     response = self.ser.readline().decode().rstrip()
                     response = response.split(",")
