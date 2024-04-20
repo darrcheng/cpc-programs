@@ -59,6 +59,10 @@ class App:
         for cpc in self.cpcs:
             cpc.start()
 
+        # Constants for flow intervals
+        self.curr_time = time.monotonic()
+        self.update_interval = 1  # seconds
+
         # Check the queue every 1s
         root.after(1000, self.check_queue)
 
@@ -91,8 +95,15 @@ class App:
             data_writer = csv.writer(data_file, delimiter=",")
             data_writer.writerow(all_values)
 
+        # Schedule the next update
+        self.curr_time = self.curr_time + self.update_interval
+        next_time = self.curr_time + self.update_interval - time.monotonic()
+        if next_time < 0:
+            next_time = 0
+        next_time = int(next_time * 1000)
+
         # Check the queue again after 1s
-        self.root.after(1000, self.check_queue)
+        self.root.after(next_time, self.check_queue)
 
     def close(self):
         self.stop_threads.set()
