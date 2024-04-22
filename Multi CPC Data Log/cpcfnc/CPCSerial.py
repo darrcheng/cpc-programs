@@ -76,12 +76,16 @@ class CPCSerial:
 
                 # Modify concentration
                 if not self.config["default_flow"]:
-                    calc_conc = (
-                        float(serial_output["1 second counts"])
-                        / self.config["cpc_flowrate"]
-                    )
-                    serial_output["concentration"] = "{:.2f}".format(calc_conc)
-
+                    try:
+                        calc_conc = (
+                            float(serial_output["1 second counts"])
+                            / self.config["cpc_flowrate"]
+                        )
+                        serial_output["concentration"] = "{:.2f}".format(
+                            calc_conc
+                        )
+                    except ValueError:
+                        serial_output["concentration"] = ""
                 # Share CPC data with other threads
                 self.data_queue.put(serial_output)
 
