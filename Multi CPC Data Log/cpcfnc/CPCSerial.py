@@ -5,7 +5,7 @@ import time
 import traceback
 
 import serial
-
+import random
 
 class CPCSerial:
     def __init__(self, config, data_queue, stop_event, stop_barrier, test=False):
@@ -59,7 +59,7 @@ class CPCSerial:
                     for command in self.config["serial_commands"]:
                         # GUI testing code here
                         if self.test:
-                            responses.append(0)
+                            responses.append(random.randint(0,1000))
                             continue
 
                         # Send command to serial port
@@ -127,3 +127,4 @@ def sched_update(process_name, curr_time, update_time=1):
     # Update current time for next interval
     curr_time = curr_time + update_time
     return curr_time
+    
