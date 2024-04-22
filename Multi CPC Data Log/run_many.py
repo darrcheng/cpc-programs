@@ -72,7 +72,11 @@ class App:
         # Start threads for all CPCs
         for cpc in self.cpcs:
             cpc.start()
-        
+
+        # Constants for flow intervals
+        self.curr_time = time.monotonic()
+        self.update_interval = 1  # seconds
+
         # Check the queue every 1s
         root.after(1000, self.check_queue)
 
@@ -184,8 +188,57 @@ class App:
                 data_writer.writerow(row)
             
 
+        # Schedule the next update
+        self.curr_time = self.curr_time + self.update_interval
+        next_time = self.curr_time + self.update_interval - time.monotonic()
+        if next_time < 0:
+            next_time = 0
+        next_time = int(next_time * 1000)
+
+        # Schedule the next update
+        self.curr_time = self.curr_time + self.update_interval
+        next_time = self.curr_time + self.update_interval - time.monotonic()
+        if next_time < 0:
+            next_time = 0
+        next_time = int(next_time * 1000)
+
         # Check the queue again after 1s
-        self.root.after(1000, self.check_queue)
+        self.root.after(next_time, self.check_queue)
+
+    def update_cpc_display(self, index, data):
+        frame = self.cpc_tab.winfo_children()[index]
+        for label in frame.winfo_children():
+            key = label.cget("text").split(":")[0]
+            if key in data:
+                label.config(text=f"{key}: {data[key]}")
+
+    def update_plot(self,frame=None):
+        # Get the current time
+        current_time = datetime.now()
+        print(current_time)
+        # Calculate the time for two minutes ago
+        ten_min_ago = current_time - timedelta(minutes=10)
+
+        # Clear the current axes
+        self.ax.clear()
+        self.ax.set_xlabel("Time")
+        self.ax.set_ylabel("Particle Count, particles/cm³")
+        
+        # Re-plot data for each CPC
+        for cpc_name, cpc_data in self.plot_data.items():
+            if cpc_data['datetime']:
+                filtered_datetimes = [dt for dt in cpc_data['datetime'] if dt >= ten_min_ago]
+                filtered_concentrations = [concentration for dt, concentration in zip(cpc_data['datetime'], cpc_data['concentration']) if dt >= ten_min_ago]
+
+                self.ax.scatter(filtered_datetimes, filtered_concentrations, label=cpc_name)
+
+        # Update the plot's x-axis limits and format
+        self.ax.set_xlim([ten_min_ago, current_time])
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        plt.setp(self.ax.get_xticklabels(), rotation=45, ha="right")
+        # Update the legend
+        self.ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),ncol=3, fancybox=True)
+
 
     def update_cpc_display(self, index, data):
         frame = self.cpc_tab.winfo_children()[index]
