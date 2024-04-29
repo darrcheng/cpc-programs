@@ -162,7 +162,12 @@ class App:
 
                 # Parse datetime and concentration, add to the plot data structure
                 parsed_datetime = data_point['datetime']
-                concentration = float(data_point['concentration'])
+                # Safe parsing of concentration with default value if empty or invalid
+                try:
+                    concentration = float(data_point['concentration']) if data_point['concentration'] else 0.0
+                except ValueError:
+                    concentration = 0.0  # Default value 
+
                 self.plot_data[cpc_name]['datetime'].append(parsed_datetime)
                 self.plot_data[cpc_name]['concentration'].append(concentration)
 
