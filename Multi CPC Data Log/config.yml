@@ -73,3 +73,4 @@ cpc6:
   "cpc_flowrate" : 0.5 # 300/60 cubic centimeters per second
   "serial_commands": ['RD','R1','R2','R3','R4','R5','R6','R7','RE','RB','R0']
   "cpc_header" : ["cpc name","datetime","concentration","condensor temp","saturator temp","optics temp","flow","ready environment","reference detector voltage","detector voltage","pump control value","1 second counts","liquid level"]
+  
