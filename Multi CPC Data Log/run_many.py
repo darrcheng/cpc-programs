@@ -185,7 +185,7 @@ class App:
         # Write all raw data to CSV file if all_cpc_data is populated
         if all_cpc_data:  # Checks if there's any data collected
             with open(self.csv_filepath, mode="a", newline="") as data_file:
-                data_writer = csv.writer(data_file, delimiter=",")
+                data_writer = csv.writer(data_file, delimiter=",",escapechar="\\")
                 # Create a list that will hold one entry per CPC for this timestamp
                 row = []
                 for name in self.cpc_name:  # Ensuring the order of data in the CSV
