@@ -5,10 +5,10 @@ import time
 import traceback
 
 import serial
-
+import random
 
 class CPCSerial:
-    def __init__(self, config, data_queue, stop_event, stop_barrier):
+    def __init__(self, config, data_queue, stop_event, stop_barrier, test=False):
         self.config = config
         self.data_queue = data_queue
         self.stop_event = stop_event
@@ -16,6 +16,9 @@ class CPCSerial:
 
         self.process_name = self.config["cpc_name"]
         self.thread = threading.Thread(target=self.record_serial_data)
+        
+        # GUI testing code here
+        self.test = test
 
     def start(self):
         self.thread.start()
@@ -37,11 +40,12 @@ class CPCSerial:
                 self.ser.readline().decode().rstrip()
 
     def record_serial_data(self):
-        # Setup CPC serial connection
-        self.serial_startup()
+        if self.test == False:
+            # Setup CPC serial connection
+            self.serial_startup()
 
-        # Send startup commands
-        self.serial_startup_commands()
+            # Send startup commands
+            self.serial_startup_commands()
 
         curr_time = time.monotonic()
 
@@ -53,6 +57,11 @@ class CPCSerial:
 
                 if self.config["serial_commands"]:
                     for command in self.config["serial_commands"]:
+                        # GUI testing code here
+                        if self.test:
+                            responses.append(random.randint(0,1000))
+                            continue
+
                         # Send command to serial port
                         self.ser.write((command + "\r").encode())
 
@@ -63,6 +72,12 @@ class CPCSerial:
                         # Append response to the list
                         responses.extend(response)
                 else:
+
+                    # GUI testing code here
+                    if self.test:
+                        responses.append(1)
+                        continue
+
                     # Read response from serial port
                     response = self.ser.readline().decode().rstrip()
                     response = response.split(",")
@@ -78,14 +93,13 @@ class CPCSerial:
                 if not self.config["default_flow"]:
                     try:
                         calc_conc = (
-                            float(serial_output["1 second counts"])
-                            / self.config["cpc_flowrate"]
+                        float(serial_output["1 second counts"])
+                        / self.config["cpc_flowrate"]
                         )
-                        serial_output["concentration"] = "{:.2f}".format(
-                            calc_conc
-                        )
+                        serial_output["concentration"] = "{:.2f}".format(calc_conc)
                     except ValueError:
                         serial_output["concentration"] = ""
+                        
                 # Share CPC data with other threads
                 self.data_queue.put(serial_output)
 
@@ -116,3 +130,4 @@ def sched_update(process_name, curr_time, update_time=1):
     # Update current time for next interval
     curr_time = curr_time + update_time
     return curr_time
+    
