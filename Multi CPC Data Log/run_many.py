@@ -188,13 +188,13 @@ class App:
                 data_writer = csv.writer(data_file, delimiter=",",escapechar="\\")
                 # Create a list that will hold one entry per CPC for this timestamp
                 row = []
-                for name in self.cpc_name:  # Ensuring the order of data in the CSV
+                for i, name in enumerate(self.cpc_name):  # Ensuring the order of data in the CSV
                     if name in all_cpc_data:
                         # Assuming all_cpc_data[name] is a dictionary containing all necessary data fields
                         row.extend(list(all_cpc_data[name].values()))
                     else:
                         # Extend row with NaNs or some placeholder if no data for this CPC
-                        row.extend([np.nan] * len(self.config[f"cpc1"]["cpc_header"]))  # Adjust the number as per data fields
+                        row.extend([np.nan] * len(self.config[f"cpc{i+1}"]["cpc_header"]))  # Adjust the number as per data fields
 
                 data_writer.writerow(row)
          
