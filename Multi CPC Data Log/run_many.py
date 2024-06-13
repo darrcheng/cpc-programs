@@ -228,6 +228,9 @@ class App:
         self.ax.set_xlabel("Time")
         self.ax.set_ylabel("Particle Count, particles/cm³")
         
+        # Collect max value across CPCs
+        max_val = []
+
         # Re-plot data for each CPC
         for cpc_name, cpc_data in self.plot_data.items():
             if cpc_data['datetime']:
@@ -236,9 +239,17 @@ class App:
 
                 self.ax.scatter(filtered_datetimes, filtered_concentrations, label=cpc_name,s=10)
 
+                max_val.append(max(filtered_concentrations))
         # Update the plot's x-axis limits and format
         self.ax.set_xlim([ten_min_ago, current_time])
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        # Setup y-lim
+        filt_max = [val for val in max_val if val<= 99000]
+        if not filt_max:
+            ylim = 100000
+        else:
+            ylim = max(filt_max)
+        self.ax.set_ylim([0,ylim*1.1])
         plt.setp(self.ax.get_xticklabels(), rotation=45, ha="right")
         # Update the legend
         self.ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),ncol=3, fancybox=True)
