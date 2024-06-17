@@ -52,6 +52,11 @@ class CPCSerial:
         # Loop until stop event is set
         while not self.stop_event.is_set():
             try:
+                # Send startup commands if CPC restarts often
+                if self.process_name == "3025_Jim's":
+                    if time.monotonic() % 60 < 1:
+                        self.serial_startup_commands()
+                
                 # Store responses in a list
                 responses = []
 
