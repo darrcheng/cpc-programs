@@ -185,16 +185,16 @@ class App:
         # Write all raw data to CSV file if all_cpc_data is populated
         if all_cpc_data:  # Checks if there's any data collected
             with open(self.csv_filepath, mode="a", newline="") as data_file:
-                data_writer = csv.writer(data_file, delimiter=",")
+                data_writer = csv.writer(data_file, delimiter=",",escapechar="\\")
                 # Create a list that will hold one entry per CPC for this timestamp
                 row = []
-                for name in self.cpc_name:  # Ensuring the order of data in the CSV
+                for i, name in enumerate(self.cpc_name):  # Ensuring the order of data in the CSV
                     if name in all_cpc_data:
                         # Assuming all_cpc_data[name] is a dictionary containing all necessary data fields
                         row.extend(list(all_cpc_data[name].values()))
                     else:
                         # Extend row with NaNs or some placeholder if no data for this CPC
-                        row.extend([np.nan] * len(self.config[f"cpc1"]["cpc_header"]))  # Adjust the number as per data fields
+                        row.extend([np.nan] * len(self.config[f"cpc{i+1}"]["cpc_header"]))  # Adjust the number as per data fields
 
                 data_writer.writerow(row)
          
@@ -228,6 +228,9 @@ class App:
         self.ax.set_xlabel("Time")
         self.ax.set_ylabel("Particle Count, particles/cm³")
         
+        # Collect max value across CPCs
+        max_val = []
+
         # Re-plot data for each CPC
         for cpc_name, cpc_data in self.plot_data.items():
             if cpc_data['datetime']:
@@ -236,9 +239,17 @@ class App:
 
                 self.ax.scatter(filtered_datetimes, filtered_concentrations, label=cpc_name,s=10)
 
+                max_val.append(max(filtered_concentrations))
         # Update the plot's x-axis limits and format
         self.ax.set_xlim([ten_min_ago, current_time])
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        # Setup y-lim
+        filt_max = [val for val in max_val if val<= 99000]
+        if not filt_max:
+            ylim = 100000
+        else:
+            ylim = max(filt_max)
+        self.ax.set_ylim([0,ylim*1.1])
         plt.setp(self.ax.get_xticklabels(), rotation=45, ha="right")
         # Update the legend
         self.ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),ncol=3, fancybox=True)
