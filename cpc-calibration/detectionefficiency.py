@@ -108,34 +108,38 @@ def plot_detect_eff(
     return plt.figure()
 
 
-def plot_conc(x_param, data_directory, data_title, detect_eff_avg):
-    if x_param == "Voltage":
-        graph_param = ["DMA Voltage", "DMA Voltage (V)", "_conc_vlt.png"]
-    elif x_param == "Diameter":
-        graph_param = ["Diameter", "Mobility Diameter", "_conc_dia.png"]
+def plot_conc(graph_param, data_directory, data_title, detect_eff_avg):
+    # if x_param == "Voltage":
+    #     graph_param = ["DMA Voltage", "DMA Voltage (V)", "_conc_vlt.png"]
+    # elif x_param == "Diameter":
+    #     graph_param = ["Diameter", "Mobility Diameter", "_conc_dia.png"]
     fig, (ax1, ax2) = plt.subplots(2, constrained_layout=True, sharex=True)
 
     # Electrometer Concentration Plot
     ax1.plot(
-        detect_eff_avg[graph_param[0]],
-        detect_eff_avg["Electrometer Concentration"],
+        detect_eff_avg[graph_param["x_param"]],
+        detect_eff_avg[graph_param["elec_conc_param"]],
     )
     ax1.set_ylabel("Elec. Concentration (#/cc)")
 
     # CPC Concentration Plot
-    ax2.plot(detect_eff_avg[graph_param[0]], detect_eff_avg["concentration"])
+    ax2.plot(
+        detect_eff_avg[graph_param["x_param"]],
+        detect_eff_avg[graph_param["cpc_conc_param"]],
+    )
     ax2.set_ylabel("CPC Concentration (#/cc)")
 
     # Plot Labels
     for ax in (ax1, ax2):
         ax.label_outer()
     fig.suptitle("Size Distribution & CPC Concentration")
-    fig.supxlabel(graph_param[1])
+    fig.supxlabel(graph_param["x_label"])
 
-    fig.savefig(
-        os.path.join(data_directory, "Graphs", data_title + graph_param[2]),
-        dpi=300,
-    )
+    return fig
+    # fig.savefig(
+    #     os.path.join(data_directory, "Graphs", data_title + graph_param[2]),
+    #     dpi=300,
+    # )
 
 
 # Constants

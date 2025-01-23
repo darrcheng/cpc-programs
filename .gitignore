@@ -163,6 +163,7 @@ cython_debug/
 *.csv
 *.jpg
 *.png
+*.txt
 
 # Run Files
 *.bat
