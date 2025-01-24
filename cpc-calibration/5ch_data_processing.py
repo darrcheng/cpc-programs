@@ -101,6 +101,7 @@ detect_eff = final_data_set[detect_eff_col]
 detect_eff["diameter"] = (
     detect_eff["elec_dma_voltage"] * mobilityConvSlope + mobilityConvOffset
 )
+detect_eff.to_csv("detecteffcsv.csv")
 
 # Group, skip first 30 rows, then take average across group
 # detect_eff_avg = detect_eff.groupby(
@@ -256,6 +257,19 @@ fig = detectionefficiency.plot_conc(
 )
 fig.savefig(
     os.path.join(output_folder, "Graphs", data_title + "_conc_dia.png"),
+    dpi=300,
+)
+
+detect_graph_param = {
+    "x_param": "diameter",
+    "x_label": "Mobility Diameter",
+    "detect_eff_param": f"{cpc_serial}_detect_eff",
+}
+fig = detectionefficiency.plot_detect_eff(
+    detect_graph_param, data_title, detect_eff_avg
+)
+fig.savefig(
+    os.path.join(output_folder, "Graphs", data_title + "_detect_eff_dia.png"),
     dpi=300,
 )
 

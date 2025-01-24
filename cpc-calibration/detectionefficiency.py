@@ -76,36 +76,35 @@ def calc_detect_eff(
     return detect_eff_avg
 
 
-def plot_detect_eff(
-    x_param, data_title, data_dir, detect_eff_avg, fig_num=None, suffix=""
-):
-    if x_param == "Voltage":
-        graph_param = [
-            "DMA Voltage" + suffix,
-            "DMA Voltage (V)",
-            "_detect_eff_vlt.png",
-        ]
-    elif x_param == "Diameter":
-        graph_param = [
-            "Diameter" + suffix,
-            "Mobility Diameter",
-            "_detect_eff_dia.png",
-        ]
-    plt.figure(fig_num)
-    plt.plot(
-        detect_eff_avg[graph_param[0]],
-        detect_eff_avg["Detection Efficiency" + suffix],
+def plot_detect_eff(graph_param, data_title, detect_eff_avg):
+    # if x_param == "Voltage":
+    #     graph_param = [
+    #         "DMA Voltage" + suffix,
+    #         "DMA Voltage (V)",
+    #         "_detect_eff_vlt.png",
+    #     ]
+    # elif x_param == "Diameter":
+    #     graph_param = [
+    #         "Diameter" + suffix,
+    #         "Mobility Diameter",
+    #         "_detect_eff_dia.png",
+    #     ]
+    fig, ax = plt.subplots()
+    # plt.figure(fig_num)
+    ax.plot(
+        detect_eff_avg[graph_param["x_param"]],
+        detect_eff_avg[graph_param["detect_eff_param"]],
         "x",
     )
-    plt.title(data_title + " CPC Detection Efficiency")
-    plt.xlabel(graph_param[1])
-    plt.ylabel("Detection Efficiency")
-    plt.ylim([-0.2, 1.2])
-    plt.savefig(
-        os.path.join(data_dir, "Graphs", data_title + graph_param[2]),
-        dpi=300,
-    )
-    return plt.figure()
+    ax.set_title(data_title + " CPC Detection Efficiency")
+    ax.set_xlabel(graph_param["x_label"])
+    ax.set_ylabel("Detection Efficiency")
+    ax.set_ylim([-0.2, 1.2])
+    # plt.savefig(
+    #     os.path.join(data_dir, "Graphs", data_title + graph_param[2]),
+    #     dpi=300,
+    # )
+    return fig
 
 
 def plot_conc(graph_param, data_directory, data_title, detect_eff_avg):
