@@ -80,7 +80,7 @@ fits_output_path = os.path.join(data_directory[0], fits_output_filename)
 np.savetxt(fits_output_path, fits, delimiter=",")
 
 # Save report
-report_output_filename = file_date + "_report_" + cpc + ".txt"
+report_output_filename = data_directory[1][0:15] + "_report_" + cpc + ".txt"
 report_output_path = os.path.join(data_directory[0], report_output_filename)
 
 
