@@ -7,7 +7,9 @@ from scipy.optimize import curve_fit
 import numpy as np
 
 
-def calc_mobility_conv(thabMon, thabTri):
+def calc_mobility_conv(thab):
+    thabMon = thab[0]
+    thabTri = thab[1]
     thabMonMobilDia = 1.47
     thabTriMobilDia = 1.97
     mobilityConvSlope = 1 / (
@@ -21,26 +23,28 @@ def calc_detect_eff(
     joined_data,
     mobilityConvSlope,
     mobilityConvOffset,
-    start_skip=None,
-    end_skip=None,
+    skip,
     negative_ions=False,
 ):
     # Create new df for detection efficiency related measurements
     detect_eff = joined_data.loc[
         :,
         [
-            "DMA Voltage",
-            "concentration",
-            "Electrometer Concentration",
-            "DMA Set Voltage",
+            "elec_dma_voltage",
+            "cpc_concentration",
+            "elec_concentration",
+            "elec_dma_set_voltage",
         ],
     ]
-    detect_eff["DMA Set Voltage"] = abs(detect_eff["DMA Set Voltage"])
+    detect_eff["elec_dma_set_voltage"] = abs(detect_eff["elec_dma_set_voltage"])
 
     # Calculate diameter
     detect_eff["Diameter"] = (
-        abs(detect_eff["DMA Voltage"]) * mobilityConvSlope + mobilityConvOffset
+        abs(detect_eff["elec_dma_voltage"]) * mobilityConvSlope
+        + mobilityConvOffset
     )
+    start_skip = skip[0]
+    end_skip = skip[1]
 
     # Preprocess end_skip to prevent errors
     if end_skip == 0:
@@ -50,27 +54,27 @@ def calc_detect_eff(
 
     # Group then skip rows
     detect_eff_avg = detect_eff.groupby(
-        "DMA Set Voltage", as_index=False
+        "elec_dma_set_voltage", as_index=False
     ).apply(lambda x: x.iloc[start_skip:end_skip])
 
     # Average detection effiency measurements
     detect_eff_avg = detect_eff_avg.groupby(
-        "DMA Set Voltage", as_index=False
+        "elec_dma_set_voltage", as_index=False
     ).mean()
 
     # Correct Electrometer Measurements
-    detect_eff_avg["Electrometer Concentration"] = detect_eff_avg[
-        "Electrometer Concentration"
+    detect_eff_avg["elec_concentration"] = detect_eff_avg[
+        "elec_concentration"
     ] * (-1 + 2 * negative_ions)
-    detect_eff_avg["Electrometer Concentration"] = (
-        detect_eff_avg["Electrometer Concentration"]
-        - detect_eff_avg.reset_index().at[0, "Electrometer Concentration"]
+    detect_eff_avg["elec_concentration"] = (
+        detect_eff_avg["elec_concentration"]
+        - detect_eff_avg.reset_index().at[0, "elec_concentration"]
     )
 
     # Calculate Detection Efficiency
     detect_eff_avg["Detection Efficiency"] = (
-        detect_eff_avg["concentration"]
-        / detect_eff_avg["Electrometer Concentration"]
+        detect_eff_avg["cpc_concentration"]
+        / detect_eff_avg["elec_concentration"]
     )
 
     return detect_eff_avg
@@ -81,7 +85,7 @@ def plot_detect_eff(
 ):
     if x_param == "Voltage":
         graph_param = [
-            "DMA Voltage" + suffix,
+            "elec_dma_voltage" + suffix,
             "DMA Voltage (V)",
             "_detect_eff_vlt.png",
         ]
@@ -91,26 +95,27 @@ def plot_detect_eff(
             "Mobility Diameter",
             "_detect_eff_dia.png",
         ]
-    plt.figure(fig_num)
-    plt.plot(
+    # plt.figure(fig_num)
+    fig, ax = plt.subplots(constrained_layout=True)
+    ax.plot(
         detect_eff_avg[graph_param[0]],
         detect_eff_avg["Detection Efficiency" + suffix],
         "x",
     )
-    plt.title(data_title + " CPC Detection Efficiency")
-    plt.xlabel(graph_param[1])
-    plt.ylabel("Detection Efficiency")
-    plt.ylim([-0.2, 1.2])
-    plt.savefig(
-        os.path.join(data_dir, "Graphs", data_title + graph_param[2]),
-        dpi=300,
-    )
-    return plt.figure()
+    ax.set_title(data_title + " CPC Detection Efficiency")
+    ax.set_xlabel(graph_param[1])
+    ax.set_ylabel("Detection Efficiency")
+    ax.set_ylim([-0.2, 1.2])
+    # plt.savefig(
+    #     os.path.join(data_dir, "Graphs", data_title + graph_param[2]),
+    #     dpi=300,
+    # )
+    return fig, ax
 
 
 def plot_conc(x_param, data_directory, data_title, detect_eff_avg):
     if x_param == "Voltage":
-        graph_param = ["DMA Voltage", "DMA Voltage (V)", "_conc_vlt.png"]
+        graph_param = ["elec_dma_voltage", "DMA Voltage (V)", "_conc_vlt.png"]
     elif x_param == "Diameter":
         graph_param = ["Diameter", "Mobility Diameter", "_conc_dia.png"]
     fig, (ax1, ax2) = plt.subplots(2, constrained_layout=True, sharex=True)
@@ -118,12 +123,14 @@ def plot_conc(x_param, data_directory, data_title, detect_eff_avg):
     # Electrometer Concentration Plot
     ax1.plot(
         detect_eff_avg[graph_param[0]],
-        detect_eff_avg["Electrometer Concentration"],
+        detect_eff_avg["elec_concentration"],
     )
     ax1.set_ylabel("Elec. Concentration (#/cc)")
 
     # CPC Concentration Plot
-    ax2.plot(detect_eff_avg[graph_param[0]], detect_eff_avg["concentration"])
+    ax2.plot(
+        detect_eff_avg[graph_param[0]], detect_eff_avg["cpc_concentration"]
+    )
     ax2.set_ylabel("CPC Concentration (#/cc)")
 
     # Plot Labels
@@ -139,9 +146,7 @@ def plot_conc(x_param, data_directory, data_title, detect_eff_avg):
 
 
 # Constants
-def calc_cpc_cal(
-    data_title, thabMon, thabTri, start_skip=0, end_skip=0, negative_ions=False
-):
+def calc_cpc_cal(data_title, thab, skip=(0, 0), negative_ions=False):
     # Read in data
     root = tk.Tk()
     root.withdraw()
@@ -152,7 +157,7 @@ def calc_cpc_cal(
     )
     joined_data = pd.read_csv(
         PathNameJoinedData[0],
-        engine="pyarrow",
+        # engine="pyarrow",
         header=0,
         index_col=0,
     )
@@ -162,15 +167,14 @@ def calc_cpc_cal(
     os.makedirs(os.path.join(data_directory[0], "Graphs"), exist_ok=True)
 
     # Calculate voltage to mobility conversion
-    mobilityConvSlope, mobilityConvOffset = calc_mobility_conv(thabMon, thabTri)
+    mobilityConvSlope, mobilityConvOffset = calc_mobility_conv(thab)
 
     # Calculate Detection Effiency
     detect_eff_avg = calc_detect_eff(
         joined_data,
         mobilityConvSlope,
         mobilityConvOffset,
-        start_skip,
-        end_skip,
+        skip,
         negative_ions,
     )
 
@@ -202,7 +206,7 @@ def sigmoid(x, eta, dp_50, k):
 
 def main():
     detect_eff_avg, data_directory = calc_cpc_cal(
-        data_title, thabMon, thabTri, start_skip, end_skip, negative_ions
+        data_title, thab, skip, negative_ions
     )
     plot_cpc_cal(data_title, detect_eff_avg, data_directory)
 
@@ -211,8 +215,10 @@ if __name__ == "__main__":
     # Ask for data title
     data_title = input("Enter Data Title: ")
     negative_ions = False
-    start_skip = 10
-    end_skip = 10
-    thabMon = 228
-    thabTri = 425
+    skip = (10, 10)  # (start_skip, end_skip)
+    # start_skip = 10
+    # end_skip = 10
+    thab = (228, 425)  # (thabMon, thabTri)
+    # thabMon = 228
+    # thabTri = 425
     main()
