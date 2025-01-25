@@ -137,12 +137,13 @@ def plot_conc(x_param, data_directory, data_title, detect_eff_avg):
     for ax in (ax1, ax2):
         ax.label_outer()
     fig.suptitle("Size Distribution & CPC Concentration")
-    fig.supxlabel(graph_param[1])
+    fig.supxlabel(graph_param["x_label"])
 
-    fig.savefig(
-        os.path.join(data_directory, "Graphs", data_title + graph_param[2]),
-        dpi=300,
-    )
+    return fig
+    # fig.savefig(
+    #     os.path.join(data_directory, "Graphs", data_title + graph_param[2]),
+    #     dpi=300,
+    # )
 
 
 # Constants
