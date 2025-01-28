@@ -132,7 +132,7 @@ class App:
 
     def init_cpc_frames(self):
         # Layout initialization
-        for i in range(1, self.config['num_cpcs'] + 1):
+        for i in range(1, self.config['num_cpcs']+  1):
             cpc_key = f"cpc{i}"
             cpc_config = self.config[cpc_key]
             frame = ttk.LabelFrame(self.cpc_tab, text=cpc_config['cpc_name'], padding=10)
@@ -171,7 +171,7 @@ class App:
                 # Safe parsing of concentration with default value if empty or invalid
                 try:
                     concentration = float(data_point['concentration']) if data_point['concentration'] else 0.0
-                except ValueError:
+                except:
                     concentration = 0.0  # Default value or decide if you want to log this error or take any specific action
 
                 self.plot_data[cpc_name]['datetime'].append(parsed_datetime)
@@ -244,12 +244,13 @@ class App:
         self.ax.set_xlim([ten_min_ago, current_time])
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
         # Setup y-lim
-        filt_max = [val for val in max_val if val<= 99000]
+        filt_max = [val for val in max_val if val<= 299000]
         if not filt_max:
-            ylim = 100000
+            ylim = 200000
         else:
             ylim = max(filt_max)
-        self.ax.set_ylim([0,ylim*1.1])
+        self.ax.set_yscale('log')
+        self.ax.set_ylim([1,ylim*1.1])
         plt.setp(self.ax.get_xticklabels(), rotation=45, ha="right")
         # Update the legend
         self.ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),ncol=3, fancybox=True)
