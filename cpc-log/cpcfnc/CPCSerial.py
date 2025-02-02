@@ -37,7 +37,14 @@ class CPCSerial:
         if self.config["start_commands"]:
             for start_command in self.config["start_commands"]:
                 self.ser.write((start_command + "\r\n").encode())
-                self.ser.readline().decode().rstrip()
+                time.sleep(0.1)
+                self.ser.flushInput()
+        if self.config["set_time"]:
+            date_strings= ["%y/%m/%d","%H:%M:%S"]
+            for date_string in date_strings:
+                self.ser.write((f"rtc,{datetime.now().strftime(date_string)}\r\n").encode())
+                time.sleep(0.1)
+                self.ser.flushInput()
 
     def record_serial_data(self):
         if self.test == False:
